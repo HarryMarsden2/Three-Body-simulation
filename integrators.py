@@ -7,3 +7,6 @@ def RK4(f,y,h,t):
     k4 = f(y + h*k3, t + h)
     return y + (h/6)*(k1 + 2*k2 + 2*k3 + k4)
 
+def forward_euler(f,y,h,t):
+    return y + h*f(y,t)
+
