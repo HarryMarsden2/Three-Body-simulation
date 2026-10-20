@@ -19,4 +19,4 @@ def derivatives(y,masses,G):
     velocities = y[2*n:].reshape((n, 2))   #takes velocities from y and reshapes them into a 2D array
 
     accelerations = acceleration(positions, masses, G)
-    return np.concatenate([velocities, accelerations])
+    return np.concatenate([velocities.flatten(), accelerations.flatten()])
