@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 
 from physics import derivatives
 from integrators import RK4, forward_euler
+from simulation import simulate
 
 '''initial conditions for the stable figure 8 orbit'''
 initial_positions = np.array([
@@ -36,18 +37,10 @@ y = np.concatenate([positions.flatten(),
 
 f = lambda y, t: derivatives(y, masses, G) #creates a quick function that takes in y and t and returns the derivatives of y
 
-'''running the numerical trajectory'''
-initial_state=y.copy() #saves the initial state of the system
-trajectory = np.zeros((n_steps+1, len(y))) #creates an array to store the trajectory
-trajectory[0] = y #sets the first row of the trajectory to the initial state
+trajectory = simulate(RK4, f, y, h, n_steps) #simulates the trajectory using RK4 integrator
 
-for i in range(n_steps):
-    t = i * h
-    y = RK4(f, y, h, t) #updates the state using RK4 integrator
-    trajectory[i+1] = y #stores the updated state in the trajectory
 
 '''plottting the trajectory'''
-
 n = len(masses)
 orbit_positions = trajectory[:, :2*n].reshape(-1, n, 2) #reshapes the trajectory to get the positions of the bodies
 
@@ -62,5 +55,5 @@ plt.ylabel("y")
 plt.legend()
 plt.show()
 
-error = np.linalg.norm(trajectory[-1,:2*n] - initial_state[:2*n]) #calculates the error in the final position compared to the initial position
+error = np.linalg.norm(trajectory[-1,:2*n] - trajectory[0,:2*n]) #calculates the error in the final position compared to the initial position
 print(f"Final position error: {error}")
