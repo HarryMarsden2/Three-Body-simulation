@@ -37,23 +37,41 @@ y = np.concatenate([positions.flatten(),
 
 f = lambda y, t: derivatives(y, masses, G) #creates a quick function that takes in y and t and returns the derivatives of y
 
-trajectory = simulate(RK4, f, y, h, n_steps) #simulates the trajectory using RK4 integrator
+rk4_trajectory = simulate(RK4, f, y, h, n_steps) #simulates the trajectory using RK4 integrator
+euler_trajectory = simulate(forward_euler, f, y, h, n_steps) #simulates the trajectory using forward euler integrator
 
-
-'''plottting the trajectory'''
 n = len(masses)
-orbit_positions = trajectory[:, :2*n].reshape(-1, n, 2) #reshapes the trajectory to get the positions of the bodies
+'''plottting the trajectory'''
+fig, axes = plt.subplots(2, 3, figsize=(13, 7), sharex=True, sharey=True)
 
-for i in range(n):
-    plt.plot(orbit_positions[:, i, 0],
-             orbit_positions[:, i, 1],
-             label=f"body {i+1}")
+methods = [("RK4", rk4_trajectory), ("Euler", euler_trajectory)]
 
-plt.axis("equal")
-plt.xlabel("x")
-plt.ylabel("y")
-plt.legend()
+for row, (name, trajectory) in enumerate(methods):
+    positions = trajectory[:, :2*n].reshape(-1, n, 2)
+
+    for body in range(n):
+        ax = axes[row, body]
+
+        ax.plot(positions[:, body, 0], positions[:, body, 1])
+
+        ax.scatter(positions[0, body, 0],
+                   positions[0, body, 1],
+                   color="black", marker="o", label="Start")
+
+        ax.scatter(positions[-1, body, 0],
+                   positions[-1, body, 1],
+                   color="red", marker="x", label="End")
+
+        ax.set_title(f"{name} - Body {body+1}")
+        ax.set_aspect("equal")
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+
+plt.tight_layout()
 plt.show()
 
-error = np.linalg.norm(trajectory[-1,:2*n] - trajectory[0,:2*n]) #calculates the error in the final position compared to the initial position
-print(f"Final position error: {error}")
+rk4_error = np.linalg.norm(rk4_trajectory[-1,:2*n] - rk4_trajectory[0,:2*n]) #calculates the error in the final position compared to the initial position
+euler_error = np.linalg.norm(euler_trajectory[-1,:2*n] - euler_trajectory[0,:2*n]) #calculates the error in the final position compared to the initial position
+
+print(f"RK4 final position error: {rk4_error}")
+print(f"Forward Euler final position error: {euler_error}")
