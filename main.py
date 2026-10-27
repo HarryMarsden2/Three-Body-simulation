@@ -42,7 +42,8 @@ euler_trajectory = simulate(forward_euler, f, y, h, n_steps) #simulates the traj
 
 n = len(masses)
 '''plottting the trajectory'''
-fig, axes = plt.subplots(2, 3, figsize=(13, 7), sharex=True, sharey=True)
+fig, axes = plt.subplots(2, 3, figsize=(13, 5.5),
+                         sharex=True, sharey=True)
 
 methods = [("RK4", rk4_trajectory), ("Euler", euler_trajectory)]
 
@@ -52,22 +53,46 @@ for row, (name, trajectory) in enumerate(methods):
     for body in range(n):
         ax = axes[row, body]
 
-        ax.plot(positions[:, body, 0], positions[:, body, 1])
+        x = positions[:, body, 0]
+        y = positions[:, body, 1]
 
-        ax.scatter(positions[0, body, 0],
-                   positions[0, body, 1],
-                   color="black", marker="o", label="Start")
+        ax.plot(x, y, color="tab:blue", label="Trajectory")
 
-        ax.scatter(positions[-1, body, 0],
-                   positions[-1, body, 1],
-                   color="red", marker="x", label="End")
+        # Starting and finishing positions
+        ax.scatter(x[0], y[0], color="black",
+                   s=35, zorder=5, label="Start (t=0)")
+
+        ax.scatter(x[-1], y[-1], color="red",
+                   marker="x", s=50, zorder=5,
+                   label="End (t=T)")
+
+        # Direction arrows at three points along the trajectory
+        for fraction in [0.2, 0.5, 0.8]:
+            i = int(fraction * (len(x) - 1))
+            j = min(i + max(1, len(x)//40), len(x) - 1)
+
+            ax.annotate("",
+                        xy=(x[j], y[j]),
+                        xytext=(x[i], y[i]),
+                        arrowprops=dict(arrowstyle="->",
+                                        color="tab:blue",
+                                        lw=1.5,
+                                        mutation_scale=15))
 
         ax.set_title(f"{name} - Body {body+1}")
         ax.set_aspect("equal")
         ax.set_xlabel("x")
         ax.set_ylabel("y")
 
-plt.tight_layout()
+        # Show tick labels on every graph
+        ax.tick_params(labelbottom=True, labelleft=True)
+
+# One legend for the entire figure
+handles, labels = axes[0, 0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="upper center",
+           ncol=3, frameon=False)
+
+plt.tight_layout(rect=(0, 0, 1, 0.91))
 plt.show()
 
 rk4_error = np.linalg.norm(rk4_trajectory[-1,:2*n] - rk4_trajectory[0,:2*n]) #calculates the error in the final position compared to the initial position
